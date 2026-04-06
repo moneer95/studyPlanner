@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand">Administrator</div>
+  <nav>
+    <form th:action="@{/logout}" method="post" style="display:inline">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="secondary" style="margin-top:0">Log out</button>
+    </form>
+  </nav>
+</header>
+<main>
+  <section class="hero">
+    <h1>User &amp; content management</h1>
+    <p class="muted">FR16–FR17: manage accounts and quiz questions.</p>
+  </section>
+
+  <div class="card">
+    <h2>Users</h2>
+    <table>
+      <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="u : ${users}">
+        <td th:text="${u.id}">1</td>
+        <td th:text="${u.username}">u</td>
+        <td th:text="${u.email}">e</td>
+        <td th:text="${u.role}">r</td>
+        <td>
+          <form th:action="@{'/admin/users/' + ${u.id} + '/delete'}" method="post" style="display:inline"
+                onsubmit="return confirm('Delete this user?');">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="secondary" style="margin-top:0">Delete</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h2>Add question to quiz (FR17)</h2>
+    <form th:action="@{/admin/questions}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <label>Quiz
+        <select name="quizId" required>
+          <option th:each="q : ${quizzes}" th:value="${q.id}" th:text="${q.title}">Quiz</option>
+        </select>
+      </label>
+      <label>Question text
+        <textarea name="text" rows="3" required></textarea>
+      </label>
+      <label>Option A <input type="text" name="optionA" required/></label>
+      <label>Option B <input type="text" name="optionB" required/></label>
+      <label>Option C <input type="text" name="optionC" required/></label>
+      <label>Option D <input type="text" name="optionD" required/></label>
+      <label>Correct index (0–3)
+        <input type="number" name="correctIndex" min="0" max="3" value="0" required/>
+      </label>
+      <label>Topic (for mock exam matching)
+        <input type="text" name="topic" placeholder="Arithmetic"/>
+      </label>
+      <button type="submit">Add question</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

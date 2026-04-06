@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Access denied</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand"><a th:href="@{/}">Smart Study Planner</a></div>
+</header>
+<main>
+  <div class="card" style="max-width:520px">
+    <h1>Access denied</h1>
+    <p class="muted">That page is only available to another role (for example, only <strong>admin</strong> can open the user list under <code>/admin</code>).</p>
+    <p><a th:href="@{/dashboard}">Go to your dashboard</a> or <a th:href="@{/}">home</a>.</p>
+  </div>
+</main>
+</body>
+</html>

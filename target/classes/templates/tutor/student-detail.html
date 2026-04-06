@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${student.username}">Student</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand"><a th:href="@{/tutor}">← Tutor home</a></div>
+</header>
+<main>
+  <div class="card">
+    <h1 th:text="${student.username}">Student</h1>
+    <p class="muted">Average across topics: <span th:text="${#numbers.formatDecimal(studentAvg,1,1)}">0</span>%</p>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:1rem">
+    <div class="card">
+      <h2>Progress</h2>
+      <table>
+        <thead><tr><th>Topic</th><th>Avg %</th></tr></thead>
+        <tbody>
+        <tr th:each="p : ${progress}">
+          <td th:text="${p.topic}">t</td>
+          <td th:text="${#numbers.formatDecimal(p.averageScorePercent,1,1)}">0</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Weak topics</h2>
+      <ul>
+        <li th:each="w : ${weakTopics}" th:text="${w.topic + ' (' + #numbers.formatDecimal(w.averageScorePercent,1,1) + '%)'}">w</li>
+      </ul>
+      <p th:if="${#lists.isEmpty(weakTopics)}" class="muted">None flagged.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h2>Study plans (update title)</h2>
+    <div th:each="plan : ${student.studyPlans}">
+      <form th:action="@{'/tutor/students/' + ${student.id} + '/plans/' + ${plan.id} + '/title'}" method="post" style="margin-bottom:1rem">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <label th:text="${'Plan #' + plan.id}">Plan</label>
+        <input type="text" name="title" th:value="${plan.title}" required/>
+        <button type="submit">Save title</button>
+      </form>
+    </div>
+    <p th:if="${#lists.isEmpty(student.studyPlans)}" class="muted">No plans.</p>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h2>Log intervention</h2>
+    <form th:action="@{/tutor/interventions}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="studentId" th:value="${student.id}"/>
+      <label>Notes
+        <textarea name="notes" rows="4" required placeholder="Follow-up, resources, outcomes…"></textarea>
+      </label>
+      <label>Outcome effective?
+        <select name="outcomeEffective">
+          <option value="">(optional)</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </label>
+      <button type="submit">Save intervention</button>
+    </form>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h2>Past interventions</h2>
+    <ul>
+      <li th:each="i : ${interventions}">
+        <span th:text="${i.createdAt}">t</span>:
+        <span th:text="${i.notes}">n</span>
+      </li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Class report</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand"><a th:href="@{/tutor}">← Tutor home</a></div>
+</header>
+<main>
+  <div class="card">
+    <h1>Class performance (FR15)</h1>
+    <p class="muted">Sorted by average topic score (lowest first) to surface struggling students (FR14).</p>
+    <table>
+      <thead><tr><th>Student</th><th>Avg %</th><th>Struggling</th></tr></thead>
+      <tbody>
+      <tr th:each="row : ${rows}">
+        <td><a th:href="@{'/tutor/students/' + ${row.id}}" th:text="${row.username}">u</a></td>
+        <td th:text="${#numbers.formatDecimal(row.averageScore,1,1)}">0</td>
+        <td><span th:if="${row.struggling}" class="badge warn">yes</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

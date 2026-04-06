@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Smart Study Planner</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand">Smart Study Planner</div>
+  <nav>
+    <a th:href="@{/login}">Log in</a>
+    &nbsp;·&nbsp;
+    <a th:href="@{/register}">Register</a>
+  </nav>
+</header>
+<main>
+  <section class="hero">
+    <h1>Plan, practice, and track progress</h1>
+    <p>A web-based study planner with quizzes, mock exams, reminders, and role-based dashboards for students, tutors, and administrators.</p>
+  </section>
+  <div class="card">
+    <h2>Getting started</h2>
+    <p class="muted">Create an account as a student, tutor, or admin. Demo accounts: <code>student</code> / <code>student123</code>,
+      <code>tutor</code> / <code>tutor123</code>, <code>admin</code> / <code>admin123</code>.</p>
+    <a class="btn" th:href="@{/register}">Register</a>
+  </div>
+</main>
+</body>
+</html>

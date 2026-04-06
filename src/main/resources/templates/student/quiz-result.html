@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Quiz result</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand"><a th:href="@{/student}">← Dashboard</a></div>
+</header>
+<main>
+  <div class="card">
+    <h1 th:text="${attempt.quiz.title}">Quiz</h1>
+    <p>
+      Score:
+      <strong th:text="${attempt.score + ' / ' + attempt.maxScore}">0/0</strong>
+    </p>
+    <h2>Instant feedback</h2>
+    <pre class="feedback" th:text="${attempt.feedbackSummary}">feedback</pre>
+  </div>
+</main>
+</body>
+</html>

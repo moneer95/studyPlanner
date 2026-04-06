@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Tutor</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand">Tutor · <span th:text="${tutor.username}">t</span></div>
+  <nav>
+    <a th:href="@{/tutor/report}">Class report</a>
+    &nbsp;·&nbsp;
+    <form th:action="@{/logout}" method="post" style="display:inline">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="secondary" style="margin-top:0">Log out</button>
+    </form>
+  </nav>
+</header>
+<main>
+  <section class="hero">
+    <h1>Students</h1>
+    <p class="muted">View performance summaries and interventions (FR13–FR15, FR19–FR20).</p>
+  </section>
+  <div class="card">
+    <table>
+      <thead><tr><th>Student</th><th>Actions</th></tr></thead>
+      <tbody>
+      <tr th:each="s : ${students}">
+        <td th:text="${s.username}">u</td>
+        <td><a th:href="@{'/tutor/students/' + ${s.id}}">Open</a></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card" style="margin-top:1rem">
+    <h2>Recent interventions</h2>
+    <ul>
+      <li th:each="i : ${interventions}">
+        <span th:text="${i.student.username}">s</span>:
+        <span th:text="${i.notes}">n</span>
+        <span th:if="${i.outcomeEffective != null}" class="badge" th:text="${i.outcomeEffective ? 'effective' : 'review'}">ok</span>
+      </li>
+    </ul>
+    <p th:if="${#lists.isEmpty(interventions)}" class="muted">None yet.</p>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Register</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<header>
+  <div class="brand"><a th:href="@{/}">Smart Study Planner</a></div>
+  <nav><a th:href="@{/login}">Log in</a></nav>
+</header>
+<main>
+  <div class="card" style="max-width:480px">
+    <h2>Create account</h2>
+    <p th:if="${error}" class="alert" th:text="${error}">Error</p>
+    <form th:action="@{/register}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <label>Username
+        <input type="text" name="username" required minlength="3"/>
+      </label>
+      <label>Email
+        <input type="email" name="email" required/>
+      </label>
+      <label>Password
+        <input type="password" name="password" required minlength="6"/>
+      </label>
+      <label>Role
+        <select name="role" required>
+          <option th:each="r : ${roles}" th:value="${r}" th:text="${r}">STUDENT</option>
+        </select>
+      </label>
+      <button type="submit">Register</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>
