@@ -11,4 +11,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     @Query("SELECT q FROM Question q WHERE LOWER(q.topic) IN :topics")
     List<Question> findByTopicsLowercase(@Param("topics") List<String> topics);
+
+    @Query("SELECT DISTINCT q.topic FROM Question q WHERE q.topic IS NOT NULL AND q.topic <> '' ORDER BY q.topic ASC")
+    List<String> findDistinctTopics();
 }

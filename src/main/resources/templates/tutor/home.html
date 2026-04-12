@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <title>Tutor</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <th:block th:replace="~{fragments/scripts :: ajax-app}"/>
 </head>
 <body>
 <header>
@@ -37,12 +38,45 @@
     <h2>Recent interventions</h2>
     <ul>
       <li th:each="i : ${interventions}">
-        <span th:text="${i.student.username}">s</span>:
+        <span class="muted" th:text="${@displayTime.format(i.createdAt)}">when</span>
+        · <span th:text="${i.student.username}">s</span>:
         <span th:text="${i.notes}">n</span>
         <span th:if="${i.outcomeEffective != null}" class="badge" th:text="${i.outcomeEffective ? 'effective' : 'review'}">ok</span>
       </li>
     </ul>
     <p th:if="${#lists.isEmpty(interventions)}" class="muted">None yet.</p>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h2>Add question to quiz</h2>
+    <p class="muted">Same as admin: extend the shared question bank students use for quizzes and mock exams.</p>
+    <form th:action="@{/tutor/questions}" method="post" data-ajax="true">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <label>Quiz
+        <select name="quizId" required>
+          <option th:each="q : ${quizzes}" th:value="${q.id}" th:text="${q.title}">Quiz</option>
+        </select>
+      </label>
+      <label>Question text
+        <textarea name="text" rows="3" required placeholder="Sample question for testing" data-suggest="qText">What is 2 + 2?</textarea>
+      </label>
+      <label>Option A <input type="text" name="optionA" required placeholder="4" value="4" data-suggest="optA"/></label>
+      <label>Option B <input type="text" name="optionB" required placeholder="3" value="3" data-suggest="optB"/></label>
+      <label>Option C <input type="text" name="optionC" required placeholder="22" value="22" data-suggest="optC"/></label>
+      <label>Option D <input type="text" name="optionD" required placeholder="5" value="5" data-suggest="optD"/></label>
+      <label>Correct index (0–3)
+        <input type="number" name="correctIndex" min="0" max="3" value="0" required data-suggest="correctIndex"/>
+      </label>
+      <label>Topic (for mock exam matching)
+        <input type="text" name="topic" list="tutor-q-topics" placeholder="Arithmetic" value="Arithmetic" data-suggest="qTopic"/>
+      </label>
+      <datalist id="tutor-q-topics">
+        <option value="Arithmetic"/>
+        <option value="Geography"/>
+        <option value="Reading"/>
+      </datalist>
+      <button type="submit">Add question</button>
+    </form>
   </div>
 </main>
 </body>

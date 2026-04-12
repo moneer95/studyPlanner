@@ -247,3 +247,121 @@ code {
   font-size: 0.9em;
   border: 1px solid var(--border);
 }
+
+#app-toast-root {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.app-toast {
+  pointer-events: auto;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: var(--text);
+  color: #fff;
+  font-size: 0.95rem;
+  box-shadow: 0 8px 24px var(--shadow);
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.app-toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.app-toast-error {
+  background: var(--danger);
+}
+
+#app-suggest-toolbar {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+#app-suggest-toolbar[hidden] {
+  display: none !important;
+}
+
+button.app-suggest-btn {
+  margin-top: 0;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.75rem;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 4px 14px var(--shadow);
+}
+
+button.app-suggest-btn:hover {
+  filter: none;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mock-topic-picker {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 0.75rem 1rem 1rem;
+  margin: 0.75rem 0 1rem;
+  background: var(--bg-accent);
+}
+
+.mock-topic-picker legend {
+  padding: 0 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mock-topic-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.mock-topic-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.mock-topic-option:hover {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.mock-topic-option input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.mock-topic-label {
+  flex: 1;
+  color: var(--text);
+}
+
+.mock-exam-form button[type="submit"] {
+  margin-top: 0.25rem;
+}

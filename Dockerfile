@@ -1,5 +1,5 @@
-# Build stage
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
+# Build stage — Debian-based images support amd64 + arm64 (Apple Silicon)
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY pom.xml .
@@ -9,10 +9,10 @@ RUN mvn -q -DskipTests package \
     && cp /app/target/smart-study-planner-*.jar /app/app.jar
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
-RUN addgroup -S spring && adduser -S spring -G spring \
+RUN groupadd -r spring && useradd -r -g spring spring \
     && mkdir -p /data && chown spring:spring /data
 
 COPY --from=build /app/app.jar /app/app.jar

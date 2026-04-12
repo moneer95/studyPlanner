@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <title>Admin</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <th:block th:replace="~{fragments/scripts :: ajax-app}"/>
 </head>
 <body>
 <header>
@@ -33,7 +34,7 @@
         <td th:text="${u.role}">r</td>
         <td>
           <form th:action="@{'/admin/users/' + ${u.id} + '/delete'}" method="post" style="display:inline"
-                onsubmit="return confirm('Delete this user?');">
+                data-ajax="true" data-confirm="Delete this user?">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="secondary" style="margin-top:0">Delete</button>
           </form>
@@ -45,7 +46,7 @@
 
   <div class="card" style="margin-top:1rem">
     <h2>Add question to quiz (FR17)</h2>
-    <form th:action="@{/admin/questions}" method="post">
+    <form th:action="@{/admin/questions}" method="post" data-ajax="true">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <label>Quiz
         <select name="quizId" required>
@@ -53,18 +54,23 @@
         </select>
       </label>
       <label>Question text
-        <textarea name="text" rows="3" required></textarea>
+        <textarea name="text" rows="3" required placeholder="Sample question for testing" data-suggest="qText">What is 2 + 2?</textarea>
       </label>
-      <label>Option A <input type="text" name="optionA" required/></label>
-      <label>Option B <input type="text" name="optionB" required/></label>
-      <label>Option C <input type="text" name="optionC" required/></label>
-      <label>Option D <input type="text" name="optionD" required/></label>
+      <label>Option A <input type="text" name="optionA" required placeholder="4" value="4" data-suggest="optA"/></label>
+      <label>Option B <input type="text" name="optionB" required placeholder="3" value="3" data-suggest="optB"/></label>
+      <label>Option C <input type="text" name="optionC" required placeholder="22" value="22" data-suggest="optC"/></label>
+      <label>Option D <input type="text" name="optionD" required placeholder="5" value="5" data-suggest="optD"/></label>
       <label>Correct index (0–3)
-        <input type="number" name="correctIndex" min="0" max="3" value="0" required/>
+        <input type="number" name="correctIndex" min="0" max="3" value="0" required data-suggest="correctIndex"/>
       </label>
       <label>Topic (for mock exam matching)
-        <input type="text" name="topic" placeholder="Arithmetic"/>
+        <input type="text" name="topic" list="admin-topics" placeholder="Arithmetic" value="Arithmetic" data-suggest="qTopic"/>
       </label>
+      <datalist id="admin-topics">
+        <option value="Arithmetic"/>
+        <option value="Geography"/>
+        <option value="Reading"/>
+      </datalist>
       <button type="submit">Add question</button>
     </form>
   </div>

@@ -11,7 +11,9 @@ import com.studyplanner.repository.StudentRepository;
 import com.studyplanner.repository.StudyPlanRepository;
 import com.studyplanner.repository.TutorRepository;
 import com.studyplanner.service.AuthenticationService;
-import com.studyplanner.service.QuizService;
+import com.studyplanner.service.quiz.QuestionBank;
+import com.studyplanner.service.quiz.QuizCatalog;
+import com.studyplanner.service.quiz.StudentProgressTracking;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Instant;
@@ -36,20 +39,29 @@ public class TutorController {
     private final StudyPlanRepository studyPlanRepository;
     private final InterventionRepository interventionRepository;
     private final AuthenticationService authenticationService;
-    private final QuizService quizService;
+    private final QuizCatalog quizCatalog;
+    private final QuestionBank questionBank;
+    private final StudentProgressTracking studentProgressTracking;
+    private final AjaxRedirect ajaxRedirect;
 
     public TutorController(TutorRepository tutorRepository,
                            StudentRepository studentRepository,
                            StudyPlanRepository studyPlanRepository,
                            InterventionRepository interventionRepository,
                            AuthenticationService authenticationService,
-                           QuizService quizService) {
+                           QuizCatalog quizCatalog,
+                           QuestionBank questionBank,
+                           StudentProgressTracking studentProgressTracking,
+                           AjaxRedirect ajaxRedirect) {
         this.tutorRepository = tutorRepository;
         this.studentRepository = studentRepository;
         this.studyPlanRepository = studyPlanRepository;
         this.interventionRepository = interventionRepository;
         this.authenticationService = authenticationService;
-        this.quizService = quizService;
+        this.quizCatalog = quizCatalog;
+        this.questionBank = questionBank;
+        this.studentProgressTracking = studentProgressTracking;
+        this.ajaxRedirect = ajaxRedirect;
     }
 
     @GetMapping
@@ -59,7 +71,26 @@ public class TutorController {
         model.addAttribute("tutor", tutor);
         model.addAttribute("students", students);
         model.addAttribute("interventions", interventionRepository.findByTutorOrderByCreatedAtDesc(tutor));
+        model.addAttribute("quizzes", quizCatalog.listQuizzes());
         return "tutor/home";
+    }
+
+    @PostMapping("/questions")
+    public Object addQuestion(
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestParam Long quizId,
+            @RequestParam String text,
+            @RequestParam String optionA,
+            @RequestParam String optionB,
+            @RequestParam String optionC,
+            @RequestParam String optionD,
+            @RequestParam int correctIndex,
+            @RequestParam(required = false) String topic,
+            @RequestHeader(value = AjaxFormHeader.NAME, required = false) String ajax
+    ) {
+        requireTutor(principal);
+        questionBank.addQuestionToQuiz(quizId, text, optionA, optionB, optionC, optionD, correctIndex, topic);
+        return ajaxRedirect.redirectOrJson(AjaxFormHeader.isAjax(ajax), "/tutor", "Question added");
     }
 
     @GetMapping("/students/{studentId}")
@@ -68,8 +99,8 @@ public class TutorController {
                                 Model model) {
         Tutor tutor = requireTutor(principal);
         Student student = studentRepository.findById(studentId).orElseThrow();
-        List<Progress> progress = quizService.progressForStudent(student);
-        List<Progress> weak = quizService.weakTopics(student);
+        List<Progress> progress = studentProgressTracking.progressForStudent(student);
+        List<Progress> weak = studentProgressTracking.weakTopics(student);
         double classAvg = progress.isEmpty() ? 0
                 : progress.stream().mapToDouble(Progress::getAverageScorePercent).average().orElse(0);
         model.addAttribute("tutor", tutor);
@@ -82,26 +113,32 @@ public class TutorController {
     }
 
     @PostMapping("/interventions")
-    public String addIntervention(
+    public Object addIntervention(
             @AuthenticationPrincipal UserDetails principal,
             @RequestParam Long studentId,
             @RequestParam String notes,
-            @RequestParam(required = false) Boolean outcomeEffective
+            @RequestParam(required = false) Boolean outcomeEffective,
+            @RequestHeader(value = AjaxFormHeader.NAME, required = false) String ajax
     ) {
         Tutor tutor = requireTutor(principal);
         Student student = studentRepository.findById(studentId).orElseThrow();
         Intervention i = new Intervention(tutor, student, notes, Instant.now());
         i.setOutcomeEffective(outcomeEffective);
         interventionRepository.save(i);
-        return "redirect:/tutor/students/" + studentId;
+        return ajaxRedirect.redirectOrJson(
+                AjaxFormHeader.isAjax(ajax),
+                "/tutor/students/" + studentId,
+                "Intervention saved"
+        );
     }
 
     @PostMapping("/students/{studentId}/plans/{planId}/title")
-    public String updatePlanTitle(
+    public Object updatePlanTitle(
             @AuthenticationPrincipal UserDetails principal,
             @PathVariable Long studentId,
             @PathVariable Long planId,
-            @RequestParam String title
+            @RequestParam String title,
+            @RequestHeader(value = AjaxFormHeader.NAME, required = false) String ajax
     ) {
         requireTutor(principal);
         StudyPlan plan = studyPlanRepository.findById(planId).orElseThrow();
@@ -110,7 +147,11 @@ public class TutorController {
         }
         plan.setTitle(title);
         studyPlanRepository.save(plan);
-        return "redirect:/tutor/students/" + studentId;
+        return ajaxRedirect.redirectOrJson(
+                AjaxFormHeader.isAjax(ajax),
+                "/tutor/students/" + studentId,
+                "Plan title updated"
+        );
     }
 
     @GetMapping("/report")
@@ -119,7 +160,7 @@ public class TutorController {
         List<Student> students = studentRepository.findAllByOrderByUsernameAsc();
         List<StudentSummary> rows = students.stream()
                 .map(s -> {
-                    List<Progress> p = quizService.progressForStudent(s);
+                    List<Progress> p = studentProgressTracking.progressForStudent(s);
                     double avg = p.isEmpty() ? 0
                             : p.stream().mapToDouble(Progress::getAverageScorePercent).average().orElse(0);
                     boolean struggling = p.stream().anyMatch(x -> x.getAverageScorePercent() < 60);

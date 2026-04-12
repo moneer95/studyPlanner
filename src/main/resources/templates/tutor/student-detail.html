@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <title th:text="${student.username}">Student</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <th:block th:replace="~{fragments/scripts :: ajax-app}"/>
 </head>
 <body>
 <header>
@@ -40,10 +41,11 @@
   <div class="card" style="margin-top:1rem">
     <h2>Study plans (update title)</h2>
     <div th:each="plan : ${student.studyPlans}">
-      <form th:action="@{'/tutor/students/' + ${student.id} + '/plans/' + ${plan.id} + '/title'}" method="post" style="margin-bottom:1rem">
+      <form th:action="@{'/tutor/students/' + ${student.id} + '/plans/' + ${plan.id} + '/title'}" method="post" style="margin-bottom:1rem" data-ajax="true">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <label th:text="${'Plan #' + plan.id}">Plan</label>
-        <input type="text" name="title" th:value="${plan.title}" required/>
+        <input type="text" name="title" th:value="${plan.title}" required
+               placeholder="e.g. Spring review plan" data-suggest="tutorPlanTitle"/>
         <button type="submit">Save title</button>
       </form>
     </div>
@@ -52,11 +54,12 @@
 
   <div class="card" style="margin-top:1rem">
     <h2>Log intervention</h2>
-    <form th:action="@{/tutor/interventions}" method="post">
+    <form th:action="@{/tutor/interventions}" method="post" data-ajax="true">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <input type="hidden" name="studentId" th:value="${student.id}"/>
       <label>Notes
-        <textarea name="notes" rows="4" required placeholder="Follow-up, resources, outcomes…"></textarea>
+        <textarea name="notes" rows="4" required placeholder="Follow-up, resources, outcomes…"
+                  data-suggest="interventionNotes">Reviewed weak topics; assigned practice quiz and follow-up next week.</textarea>
       </label>
       <label>Outcome effective?
         <select name="outcomeEffective">
@@ -73,7 +76,7 @@
     <h2>Past interventions</h2>
     <ul>
       <li th:each="i : ${interventions}">
-        <span th:text="${i.createdAt}">t</span>:
+        <span th:text="${@displayTime.format(i.createdAt)}">t</span>:
         <span th:text="${i.notes}">n</span>
       </li>
     </ul>

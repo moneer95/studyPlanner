@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <title>Student dashboard</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <th:block th:replace="~{fragments/scripts :: ajax-app}"/>
 </head>
 <body>
 <header>
@@ -24,23 +25,25 @@
   <div class="grid grid-2">
     <div class="card">
       <h2>New study plan</h2>
-      <form th:action="@{/student/plans}" method="post">
+      <form th:action="@{/student/plans}" method="post" data-ajax="true">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <label>Title
-          <input type="text" name="title" required placeholder="e.g. Week of April 6"/>
+          <input type="text" name="title" required placeholder="e.g. Week of April 6" value="Week of April 14 (test)"
+                 data-suggest="planTitle"/>
         </label>
         <button type="submit">Add plan</button>
       </form>
     </div>
     <div class="card">
       <h2>Add exam / deadline</h2>
-      <form th:action="@{/student/exams}" method="post">
+      <form th:action="@{/student/exams}" method="post" data-ajax="true">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <label>Title
-          <input type="text" name="title" required/>
+          <input type="text" name="title" required placeholder="Midterm exam" value="Midterm Biology"
+                 data-suggest="examTitle"/>
         </label>
         <label>Deadline (UTC)
-          <input type="datetime-local" name="deadline" required/>
+          <input type="datetime-local" name="deadline" required value="2026-04-30T17:00" data-suggest="examDeadline"/>
         </label>
         <button type="submit">Save</button>
       </form>
@@ -49,24 +52,30 @@
 
   <div class="card" style="margin-top:1rem">
     <h2>Study plans & sessions</h2>
+    <datalist id="session-topics">
+      <option value="Arithmetic review"/>
+      <option value="Reading comp"/>
+      <option value="Mock exam prep"/>
+    </datalist>
     <div th:each="plan : ${plans}">
       <h3 th:text="${plan.title}">Plan</h3>
       <ul>
         <li th:each="s : ${plan.sessions}">
           <span th:text="${s.topic}">topic</span>
-          — <span th:text="${s.startTime}">start</span> to <span th:text="${s.endTime}">end</span>
+          — <span th:text="${@displayTime.format(s.startTime)}">start</span> to <span th:text="${@displayTime.format(s.endTime)}">end</span>
         </li>
       </ul>
-      <form th:action="@{'/student/plans/' + ${plan.id} + '/sessions'}" method="post" style="margin-bottom:1.5rem">
+      <form th:action="@{'/student/plans/' + ${plan.id} + '/sessions'}" method="post" style="margin-bottom:1.5rem" data-ajax="true">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <label>Session topic
-          <input type="text" name="topic" required/>
+          <input type="text" name="topic" required list="session-topics" placeholder="Topic" value="Arithmetic review"
+                 data-suggest="sessionTopic"/>
         </label>
         <label>Start (UTC)
-          <input type="datetime-local" name="start" required/>
+          <input type="datetime-local" name="start" required value="2026-04-14T10:00" data-suggest="sessionStart"/>
         </label>
         <label>End (UTC)
-          <input type="datetime-local" name="end" required/>
+          <input type="datetime-local" name="end" required value="2026-04-14T11:00" data-suggest="sessionEnd"/>
         </label>
         <button type="submit">Add session</button>
       </form>
@@ -82,7 +91,7 @@
         <tbody>
         <tr th:each="e : ${exams}">
           <td th:text="${e.title}">t</td>
-          <td th:text="${e.deadline}">d</td>
+          <td th:text="${@displayTime.format(e.deadline)}">d</td>
         </tr>
         </tbody>
       </table>
@@ -92,7 +101,7 @@
       <h2>Reminders</h2>
       <ul>
         <li th:each="r : ${reminders}">
-          <span th:text="${r.remindAt}">when</span>:
+          <span th:text="${@displayTime.format(r.remindAt)}">when</span>:
           <span th:text="${r.message}">msg</span>
           <span th:if="${r.sent}" class="badge">sent</span>
         </li>
@@ -110,13 +119,23 @@
         <span th:if="${#strings.endsWith(q.class.name, 'MockExam')}" class="badge">mock</span>
       </li>
     </ul>
-    <h3 style="margin-top:1rem">Generate mock exam (topics)</h3>
-    <form th:action="@{/student/mock-exam}" method="post">
+    <h3 style="margin-top:1rem">Generate mock exam</h3>
+    <p class="muted">Choose a topic that exists in the question bank, then generate. You can combine topics later from the admin question list if needed.</p>
+    <form th:action="@{/student/mock-exam}" method="post" data-ajax="true" class="mock-exam-form">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-      <label>Comma-separated topics (match question bank topics)
-        <input type="text" name="topics" placeholder="Arithmetic, Geography" required/>
-      </label>
-      <button type="submit">Build mock exam</button>
+      <fieldset class="mock-topic-picker">
+        <legend>Suggested topics</legend>
+        <ul class="mock-topic-list">
+          <li th:each="t, iterStat : ${mockExamTopicSuggestions}">
+            <label class="mock-topic-option">
+              <input type="radio" name="topics" th:value="${t}" required th:checked="${iterStat.first}"/>
+              <span class="mock-topic-label" th:text="${t}">Arithmetic</span>
+              <span th:if="${weakTopicNamesLower.contains(#strings.toLowerCase(t))}" class="badge warn">needs practice</span>
+            </label>
+          </li>
+        </ul>
+      </fieldset>
+      <button type="submit">Generate mock exam</button>
     </form>
   </div>
 
@@ -156,7 +175,7 @@
       <tr th:each="a : ${attempts}">
         <td th:text="${a.quiz.title}">q</td>
         <td th:text="${a.score + '/' + a.maxScore}">0/0</td>
-        <td th:text="${a.completedAt}">t</td>
+        <td th:text="${@displayTime.format(a.completedAt)}">t</td>
         <td><a th:href="@{'/student/quizzes/result/' + ${a.id}}">Feedback</a></td>
       </tr>
       </tbody>
